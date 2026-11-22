@@ -161,9 +161,9 @@ class Canvas:
             dx = int(math.sqrt(r * r - dy * dy))
             self.fill_rect(cx - dx, cy + dy, 2 * dx + 1, 1, color)
 
-    def ring(self, cx, cy, r, color, t=3):
+    def ring(self, cx, cy, r, color, t=3, bg=PAPER):
         self.disc(cx, cy, r, color)
-        self.disc(cx, cy, r - t, PAPER)
+        self.disc(cx, cy, r - t, bg)
 
     def ellipse_outline(self, cx, cy, rx, ry, color, t=2):
         steps = 360
@@ -238,9 +238,9 @@ class Canvas:
 
 
 # ---------------------------------------------------------------- pictures
-def draw_globe(cv, cx, cy, r, ink, teal):
+def draw_globe(cv, cx, cy, r, ink, teal, bg=PAPER):
     cv.disc(cx, cy, r, teal)
-    cv.disc(cx, cy, r - 4, PAPER)
+    cv.disc(cx, cy, r - 4, bg)
     cv.ellipse_outline(cx, cy, r - 4, r - 4, ink, 3)
     cv.ellipse_outline(cx, cy, (r - 4) // 2, r - 4, ink, 2)
     cv.line(cx - r + 4, cy, cx + r - 4, cy, ink, 2)
@@ -254,7 +254,8 @@ def draw_thermometer(cv, x, y, w, h, red, ink):
     cv.border(x, y, w, h, ink, 2)
     cv.fill_rect(x + 3, y + h // 3, w - 6, h - h // 3 - 3, red)
     cv.disc(x + w // 2, y + h, w // 2 + 4, red)
-    cv.ring(x + w // 2, y + h, w // 2 + 4, ink, 2)
+    # solid red bulb with an ink rim: ring's inner fill is red, not paper
+    cv.ring(x + w // 2, y + h, w // 2 + 4, ink, 2, bg=red)
 
 
 def draw_flame(cv, cx, cy, s, red, gold):
@@ -271,9 +272,9 @@ def draw_tanker(cv, cx, cy, s, ink, red):
     cv.line(cx - 4 * s, cy + 4 * s, cx + 4 * s, cy + 4 * s, ink, 2)
 
 
-def draw_badge(cv, cx, cy, r, gold, ink):
+def draw_badge(cv, cx, cy, r, gold, ink, bg=PAPER):
     cv.disc(cx, cy, r, gold)
-    cv.disc(cx, cy, r - 4, PAPER)
+    cv.disc(cx, cy, r - 4, bg)
     cv.ellipse_outline(cx, cy, r - 4, r - 4, ink, 2)
     pts = []
     for k in range(10):
@@ -329,7 +330,7 @@ def card(cv, x, y, w, h, kicker, kcolor, headline, summary, pic):
     cv.border(x, y, w, h, INK, 2)
     cv.fill_rect(x, y, w, 30, kcolor)
     cv.draw_text(x + 14, y + 8, kicker, 2, WHITE)
-    pic(x + w // 2, y + 62)
+    pic(x + w // 2, y + 72)
     hy = y + 104
     cv.draw_wrapped(x + 14, hy, headline, 3, INK, w - 28, line_h=27)
     cv.draw_wrapped(x + 14, hy + 56, summary, 2, INK, w - 28, line_h=17)
@@ -364,7 +365,7 @@ def build():
     cv.line(lx + 28, ly + 236, lx + 640, ly + 236, GRAY, 2)
     cv.draw_text(lx + 28, ly + 252,
                  "31ST SUMMIT - 2ND DAY OF OVERTIME - ANTALYA", 2, GRAY)
-    draw_globe(cv, 838, 300, 78, INK, TEAL)
+    draw_globe(cv, 838, 300, 78, INK, TEAL, bg=WHITE)
     draw_thermometer(cv, 928, 268, 16, 74, RED, INK)
 
     # story cards, 3 + 3
@@ -375,23 +376,23 @@ def build():
          "IRAN STRIKES BAHRAIN SITE",
          "Tehran hits a civilian plant; two tankers struck near Hormuz.",
          lambda cx, cy: (draw_tanker(cv, cx, cy - 6, 5, INK, RED),
-                          draw_flame(cv, cx, cy - 26, 5, RED, GOLD)))
+                          draw_flame(cv, cx, cy - 22, 4, RED, GOLD)))
     card(cv, xs[1], ys[0], cw, ch, "JUSTICE", TEAL,
          "MEXICO CAPTURES CARTEL BOSS",
          "'El Chapo Isidro' seized; 11 killed in the raid.",
-         lambda cx, cy: draw_badge(cv, cx, cy - 8, 30, GOLD, INK))
+         lambda cx, cy: draw_badge(cv, cx, cy - 8, 30, GOLD, INK, bg=WHITE))
     card(cv, xs[2], ys[0], cw, ch, "WAR IN EUROPE", BLUE,
          "RUSSIAN SHIP HIT IN BALTIC",
          "Drone sets cargo ship ablaze; missile hits Kryvyi Rih.",
-         lambda cx, cy: draw_ship_burst(cv, cx, cy - 4, 6, BLUE, RED))
+         lambda cx, cy: draw_ship_burst(cv, cx, cy - 4, 5, BLUE, RED))
     card(cv, xs[0], ys[1], cw, ch, "ECONOMY", GOLD,
          "EU SIGNS INDONESIA DEAL",
          "Ten years of talks end in a free-trade pact.",
-         lambda cx, cy: draw_trade(cv, cx, cy - 8, 5, TEAL, GOLD))
+         lambda cx, cy: draw_trade(cv, cx, cy - 8, 6, TEAL, GOLD))
     card(cv, xs[1], ys[1], cw, ch, "DISASTER", INK,
          "BOAT CAPSIZES, 24 DEAD",
          "Funeral boat sinks in Bayelsa; 24 dead, 24 rescued.",
-         lambda cx, cy: draw_boat(cv, cx, cy - 6, 5, INK, BLUE))
+         lambda cx, cy: draw_boat(cv, cx, cy - 6, 6, INK, BLUE))
 
     # briefs card
     bx, by = xs[2], ys[1]
